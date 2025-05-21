@@ -1,0 +1,531 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="./style.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: { primary: "#034f84", secondary: "#64748b" },
+            borderRadius: {
+              none: "0px",
+              sm: "4px",
+              DEFAULT: "8px",
+              md: "12px",
+              lg: "16px",
+              xl: "20px",
+              "2xl": "24px",
+              "3xl": "32px",
+              full: "9999px",
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+    />
+    <style>
+      :where([class^="ri-"])::before { content: "\f3c2"; }
+      body {
+      font-family: 'Inter', sans-serif;
+      background-color: #fafafa;
+      background-image:
+      linear-gradient(rgba(249, 250, 251, 0.8) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(249, 250, 251, 0.8) 1px, transparent 1px);
+      background-size: 32px 32px;
+      }
+      .search-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+      }
+      .card-image {
+      transition: transform 0.3s ease;
+      }
+      .blog-card:hover .card-image {
+      transform: scale(1.03);
+      }
+      .blog-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .blog-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      }
+      .filter-pill {
+      transition: all 0.2s ease;
+      }
+      .filter-pill:hover {
+      background-color: #dbeafe;
+      }
+      .filter-pill.active {
+      background-color: #3b3ef69d;
+      color: white;
+      }
+      .skeleton {
+      background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      }
+      @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+      }
+      .fade-in {
+      animation: fadeIn 0.4s ease-in;
+      }
+      @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
+      <div class="container mx-auto px-4 py-4">
+        <div
+          class="flex flex-col md:flex-row items-center justify-between gap-4"
+        >
+          <a href="#" class="text-2xl font-['Pacifico'] text-gray-700"
+            >D'Source Blog</a
+          >
+          <div class="w-full md:w-1/2 lg:w-2/5 relative">
+            <div class="relative">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search articles..."
+                class="search-input w-full pl-10 pr-4 py-2 border border-gray-200 rounded-button bg-gray-50 text-gray-700 text-sm"
+              />
+              <div
+                class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400"
+              >
+                <i class="ri-search-line"></i>
+              </div>
+              <button
+                id="clearSearch"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400"
+              >
+                <i class="ri-close-line"></i>
+              </button>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 md:gap-4">
+            <div class="relative" id="notificationContainer">
+              <button
+                id="notificationButton"
+                class="text-sm text-gray-600 hover:text-primary whitespace-nowrap"
+              >
+                <i class="ri-notification-3-line mr-1"></i>
+                <span class="hidden md:inline">Notifications</span>
+                <span
+                  class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"
+                ></span>
+              </button>
+              <div
+                id="notificationPanel"
+                class="hidden absolute right-0 mt-2 w-80 bg-white rounded-button shadow-lg border border-gray-100 z-50"
+              >
+                <div class="p-4 border-b border-gray-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-medium text-gray-800">Notifications</h3>
+                    <button
+                      id="markAllRead"
+                      class="text-xs text-primary hover:underline"
+                    >
+                      Mark all as read
+                    </button>
+                  </div>
+                </div>
+                <div class="max-h-96 overflow-y-auto">
+                  <div class="unread p-4 bg-blue-50">
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <i class="ri-message-2-line text-primary"></i>
+                      </div>
+                      <div>
+                        <p class="text-sm text-gray-800">
+                          Marcus Chen commented on your article "Designing for
+                          Accessibility"
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">2 minutes ago</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="p-4 border-t border-gray-50">
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <i class="ri-heart-line text-gray-600"></i>
+                      </div>
+                      <div>
+                        <p class="text-sm text-gray-800">
+                          Emma Thompson liked your post "The Future of AI"
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">1 hour ago</p>
+                      </div>
+                    </div>
+                  </div>
+              
+                  <div class="unread p-4 border-t border-gray-50 bg-blue-50">
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0"
+                      >
+                        <i class="ri-user-follow-line text-primary"></i>
+                      </div>
+                      <div>
+                        <p class="text-sm text-gray-800">
+                          Sarah Johnson started following you
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">3 hours ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="p-3 border-t border-gray-100 text-center">
+                  <a href="#" class="text-sm text-primary hover:underline"
+                    >View all notifications</a
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="relative" id="bookmarkContainer">
+              <button
+                id="bookmarkButton"
+                class="text-sm text-gray-600 hover:text-primary whitespace-nowrap"
+              >
+                <i class="ri-bookmark-line mr-1"></i>
+                <span class="hidden md:inline">Bookmarks</span>
+              </button>
+              <div
+                id="bookmarkPanel"
+                class="hidden absolute right-0 mt-2 w-80 bg-white rounded-button shadow-lg border border-gray-100 z-50"
+              >
+                <div class="p-4 border-b border-gray-100">
+                  <h3 class="font-medium text-gray-800">Bookmarks</h3>
+                </div>
+                <div id="bookmarkList" class="max-h-96 overflow-y-auto">
+                  <div id="emptyBookmarks" class="p-8 text-center">
+                    <div
+                      class="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-gray-100"
+                    >
+                      <i class="ri-bookmark-line text-gray-400 ri-2x"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-800 mb-2">
+                      No bookmarks yet
+                    </h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                      Save interesting articles to read later
+                    </p>
+                    <button
+                      id="browseArticles"
+                      class="px-4 py-2 bg-primary text-white rounded-button hover:bg-primary/90 !rounded-button whitespace-nowrap"
+                    >
+                      Browse Articles
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="mt-4 flex flex-wrap gap-2 items-center justify-center md:justify-start"
+        >
+          <button
+            class="filter-pill active px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 !rounded-button whitespace-nowrap"
+            data-filter="all"
+          >
+            All Posts
+          </button>
+          <button
+            class="filter-pill px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 !rounded-button whitespace-nowrap"
+            data-filter="technology"
+          >
+            Technology
+          </button>
+          <button
+            class="filter-pill px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 !rounded-button whitespace-nowrap"
+            data-filter="design"
+          >
+            Design
+          </button>
+          <button
+            class="filter-pill px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 !rounded-button whitespace-nowrap"
+            data-filter="business"
+          >
+            Business
+          </button>
+          <button
+            class="filter-pill px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 !rounded-button whitespace-nowrap"
+            data-filter="productivity"
+          >
+            Productivity
+          </button>
+          <button
+            class="filter-pill px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-700 !rounded-button whitespace-nowrap"
+            data-filter="health"
+          >
+            Health
+          </button>
+        </div>
+      </div>
+    </header>
+    <main class="container mx-auto px-4 py-8">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-semibold text-gray-800">Latest Articles</h1>
+        <div class="flex items-center gap-2">
+          <label for="sortBy" class="text-sm text-gray-600">Sort by:</label>
+          <div class="relative">
+            <div
+              class="flex items-center gap-1 bg-white border border-gray-200 rounded-button px-3 py-1.5 cursor-pointer"
+            >
+              <span class="text-sm" id="sortText">Latest</span>
+              <div class="w-4 h-4 flex items-center justify-center">
+                <i class="ri-arrow-down-s-line"></i>
+              </div>
+            </div>
+            <div
+              id="sortDropdown"
+              class="absolute right-0 mt-1 bg-white shadow-lg rounded-button w-36 py-1 z-10 hidden"
+            >
+              <div
+                class="px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer"
+                data-sort="latest"
+              >
+                Latest
+              </div>
+              <div
+                class="px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer"
+                data-sort="popular"
+              >
+                Most Popular
+              </div>
+              <div
+                class="px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer"
+                data-sort="oldest"
+              >
+                Oldest
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="resultsInfo" class="mb-6 text-sm text-gray-600">
+        Showing 12 articles
+      </div>
+      <div
+        id="blogGrid"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <!-- Blog cards will be populated here -->
+      </div>
+      <div id="noResults" class="hidden py-12 text-center">
+        <div
+          class="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-gray-100"
+        >
+          <i class="ri-search-line text-gray-400 ri-2x"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-800 mb-2">No results found</h3>
+        <p class="text-gray-600 mb-4">
+          We couldn't find any posts matching your search.
+        </p>
+        <button
+          id="clearFilters"
+          class="px-4 py-2 bg-primary text-white rounded-button hover:bg-primary/90 !rounded-button whitespace-nowrap"
+        >
+          Clear all filters
+        </button>
+      </div>
+      <div id="loadingState" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="skeleton h-96 rounded-button"></div>
+          <div class="skeleton h-96 rounded-button"></div>
+          <div class="skeleton h-96 rounded-button"></div>
+          <div class="skeleton h-96 rounded-button"></div>
+          <div class="skeleton h-96 rounded-button"></div>
+          <div class="skeleton h-96 rounded-button"></div>
+        </div>
+      </div>
+    </main>
+    <footer
+      class="bg-white/80 backdrop-blur-sm border-t border-gray-100 py-8 mt-12"
+    >
+      <div class="container mx-auto px-4">
+        <div
+          class="flex flex-col md:flex-row justify-between items-center mb-8"
+        >
+          <div class="mb-6 md:mb-0">
+            <a href="#" class="text-2xl font-['Pacifico'] text-gray-700"
+              >D'Source Blog</a
+            >
+            <p class="text-gray-600 mt-2 max-w-md">
+              Discover insightful articles on technology, design, business, and
+              more to help you stay ahead in today's fast-paced world.
+            </p>
+          </div>
+          <div class="flex flex-col items-center md:items-end">
+            <div class="flex items-center gap-2 mb-4">
+              <a
+                href="#"
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-primary hover:text-white transition-colors"
+              >
+                <i class="ri-twitter-x-line"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-primary hover:text-white transition-colors"
+              >
+                <i class="ri-instagram-line"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-primary hover:text-white transition-colors"
+              >
+                <i class="ri-linkedin-line"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-primary hover:text-white transition-colors"
+              >
+                <i class="ri-facebook-line"></i>
+              </a>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-600"
+                >Subscribe to our newsletter:</span
+              >
+              <div class="relative">
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  class="pl-3 pr-10 py-1.5 text-sm border border-gray-200 rounded-button"
+                />
+                <button
+                  class="absolute right-1 top-1/2 transform -translate-y-1/2 w-8 h-6 flex items-center justify-center bg-primary text-white rounded-button !rounded-button whitespace-nowrap"
+                >
+                  <i class="ri-send-plane-line"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="flex flex-col md:flex-row justify-between items-center pt-6 border-t border-gray-200"
+        >
+          <div class="flex items-center gap-4 mb-4 md:mb-0">
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-600">Show:</span>
+              <div class="relative">
+                <div
+                  class="flex items-center gap-1 bg-white border border-gray-200 rounded-button px-3 py-1 cursor-pointer"
+                >
+                  <span class="text-sm" id="perPageText">5 per page</span>
+                  <div class="w-4 h-4 flex items-center justify-center">
+                    <i class="ri-arrow-down-s-line"></i>
+                  </div>
+                </div>
+                <div
+                  id="perPageDropdown"
+                  class="absolute left-0 mt-1 bg-white shadow-lg rounded-button w-32 py-1 z-10 hidden"
+                >
+                  <div
+                    class="px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer"
+                    data-perpage="5"
+                  >
+                    5 per page
+                  </div>
+                  <div
+                    class="px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer"
+                    data-perpage="10"
+                  >
+                    10 per page
+                  </div>
+                  <div
+                    class="px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer"
+                    data-perpage="15"
+                  >
+                    15 per page
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span class="text-sm text-gray-600"
+              >Showing <span id="currentCount">1-12</span> of
+              <span id="totalCount">48</span> articles</span
+            >
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              class="w-8 h-8 flex items-center justify-center rounded-button border border-gray-200 text-gray-400 !rounded-button whitespace-nowrap"
+            >
+              <i class="ri-arrow-left-s-line"></i>
+            </button>
+            <button
+              class="pagination-btn w-8 h-8 flex items-center justify-center rounded-button bg-primary text-white !rounded-button whitespace-nowrap"
+            >
+              1
+            </button>
+            <button
+              id="page2"
+              class="pagination-btn w-8 h-8 flex items-center justify-center rounded-button border border-gray-200 text-gray-700 hover:bg-gray-50 !rounded-button whitespace-nowrap"
+            >
+              2
+            </button>
+            <button
+              class="pagination-btn w-8 h-8 flex items-center justify-center rounded-button border border-gray-200 text-gray-700 hover:bg-gray-50 !rounded-button whitespace-nowrap"
+            >
+              3
+            </button>
+            <button
+              class="pagination-btn w-8 h-8 flex items-center justify-center rounded-button border border-gray-200 text-gray-700 hover:bg-gray-50 !rounded-button whitespace-nowrap"
+            >
+              4
+            </button>
+            <button
+              class="w-8 h-8 flex items-center justify-center rounded-button border border-gray-200 text-gray-700 !rounded-button whitespace-nowrap"
+            >
+              <i class="ri-arrow-right-s-line"></i>
+            </button>
+          </div>
+        </div>
+        <div class="text-center text-sm text-gray-600 mt-8">
+          <p>© 2025 Minimal Blog. All rights reserved.</p>
+          <div class="flex items-center justify-center gap-4 mt-2">
+            <a href="#" class="text-gray-600 hover:text-primary"
+              >Privacy Policy</a
+            >
+            <a href="#" class="text-gray-600 hover:text-primary"
+              >Terms of Service</a
+            >
+            <a href="#" class="text-gray-600 hover:text-primary"
+              >Cookie Policy</a
+            >
+          </div>
+        </div>
+      </div>
+    </footer>
+    
+    <script src="script.js"></script>
+    
+  </body>
+</html>
